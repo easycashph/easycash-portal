@@ -107,6 +107,12 @@ export function LoanApplicationFormPage() {
         requestedAmount,
         requestedTermMonths,
       };
+      // Every optional field here is a controlled input defaulting to '' - the backend's Zod
+      // schema uses .min(1).optional(), which rejects an empty string as "present but invalid"
+      // rather than treating it the same as absent, so blank fields must be stripped before send.
+      for (const key of Object.keys(body) as (keyof SubmitLoanApplicationRequest)[]) {
+        if (body[key] === '') delete body[key];
+      }
       const result = await apiClient.post<PortalLoanApplicationSummary>('/portal/loan-applications', body, true);
       setSubmitted(result);
     } catch (err) {
